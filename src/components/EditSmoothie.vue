@@ -1,6 +1,26 @@
 <template>
     <div class="edit-smoothie container" v-if="smoothie">
         <h2>Edit {{ smoothie.title }} Smoothie</h2>
+        <form @submit.prevent="editSmoothie">
+            <div class="field title">
+                <label for="title">Smoothie Title</label>
+                <input type="text" name="title" v-model="smoothie.title">
+            </div>
+            <div class="field" v-for="(ing, index) in smoothie.ingredients" :key="index">
+                <label for="ingredients">Ingredients</label>
+                <!-- we cannot bind 'ing' into model because ing is not yet exist,but ingredients[index]is aleady defined and can be used -->
+                <input type="text" name="ingredients" v-model="smoothie.ingredients[index]">
+                <i class="material-icons delete" @click="deleteIng(ing)">delete</i>
+            </div>
+            <div class="field edit-ingredient">
+                <label for="edit-ingredient">Add an ingredient</label>
+                <input type="text" name="edit-ingredient" @keydown.tab.prevent="addIng" v-model="another">
+            </div>
+            <div class="field center-align">
+                <p v-if="feedback" class="red-text">{{ feedback}} </p>
+                <button class="btn pink">Update Smoothie</button>
+            </div>
+        </form>
     </div>
 </template>
 
@@ -10,8 +30,29 @@ export default {
     name: 'EditSmoothie',
     data(){
         return{
-            smoothie: null
+            smoothie: null,
+            another: null,
+            feedback: null
        }
+    },
+    methods:{
+        editSmoothie(){
+            console.log(this.smoothie.title, this.smoothie.ingredients)
+        },
+        addIng(){
+            if(this.another){
+                this.smoothie.ingredients.push(this.another)
+                this.another = null 
+                this.feedback = null
+            }else{
+                this.feedback = 'You must enter a value to add an ingredient'
+            }
+        },
+        deleteIng(ing){
+            this.smoothie.ingredients = this.smoothie.ingredients.filter(ingredient =>{
+                return ingredient != ing;
+            })
+        }
     },
     created(){
         let ref = db.collection('smoothies').where('slug', '==', this.$route.params.smoothie_slug);
@@ -27,5 +68,25 @@ export default {
 </script>
 
 <style>
-
+    .edit-smoothie{
+        margin-top: 60px;
+        padding: 20px;
+        max-width: 600px;
+    }
+    .edit-smoothie h2{
+        font-size: 2em;
+        margin: 20px auto;
+    }
+    .edit-smoothie .field{
+        margin: 20px auto;
+        position: relative;
+    }
+    .edit-smoothie .delete{
+        position: absolute;
+        right: 0;
+        bottom: 16px;
+        color: #aaa;
+        font-size: 1.4em;
+        cursor: pointer;
+    }
 </style>
